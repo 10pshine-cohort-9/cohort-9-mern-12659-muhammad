@@ -1,7 +1,7 @@
 const logger = require('../utils/logger');
 
 
-const errorHandler = (err, req, res, next) => {
+function errorHandler(err, req, res, next) {
   logger.error({ err }, err.message);
 
   let statusCode = err.statusCode || 500;
