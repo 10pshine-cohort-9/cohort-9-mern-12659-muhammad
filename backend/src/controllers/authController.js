@@ -23,7 +23,7 @@ function setRefreshCookie(res, token) {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict',
+    sameSite: 'none',
     maxAge: REFRESH_COOKIE_MAX_AGE,
   });
 }
