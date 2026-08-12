@@ -7,12 +7,25 @@ const logger = require('../utils/logger');
 
 const SALT_ROUNDS = 10;
 
+// 7 days in milliseconds, matching the JWT expiry
+const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
 function generateTokens(userId) {
   const accessToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '15m' });
   // jti (JWT ID) is the opaque identifier stored on the user document for atomic rotation
   const jti = crypto.randomUUID();
   const refreshToken = jwt.sign({ id: userId, jti }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
   return { accessToken, refreshToken, jti };
+}
+
+// Sets the refresh token as an HttpOnly cookie so it is never accessible via client side JS.
+function setRefreshCookie(res, token) {
+  res.cookie('refreshToken', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    maxAge: REFRESH_COOKIE_MAX_AGE,
+  });
 }
 
 async function signup(req, res) {
@@ -33,9 +46,10 @@ async function signup(req, res) {
 
   logger.info({ userId: user._id }, 'User signed up');
 
+  setRefreshCookie(res, refreshToken);
   res.status(201).json({
     success: true,
-    data: { accessToken, refreshToken, user: { id: user._id, name: user.name, email: user.email } },
+    data: { accessToken, user: { id: user._id, name: user.name, email: user.email } },
     message: 'Signup successful',
   });
 }
@@ -64,18 +78,19 @@ async function login(req, res) {
 
   logger.info({ userId: user._id }, 'User logged in');
 
+  setRefreshCookie(res, refreshToken);
   res.status(200).json({
     success: true,
-    data: { accessToken, refreshToken, user: { id: user._id, name: user.name, email: user.email } },
+    data: { accessToken, user: { id: user._id, name: user.name, email: user.email } },
     message: 'Login successful',
   });
 }
 
 async function refresh(req, res) {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) {
-    return res.status(400).json({ success: false, data: null, message: 'refreshToken is required' });
+    return res.status(400).json({ success: false, data: null, message: 'refreshToken cookie is required' });
   }
 
   let payload;
@@ -111,15 +126,17 @@ async function refresh(req, res) {
 
   logger.info({ userId: user._id }, 'Tokens refreshed');
 
+  setRefreshCookie(res, newRefreshToken);
   res.status(200).json({
     success: true,
-    data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+    data: { accessToken: newAccessToken },
     message: 'Tokens refreshed',
   });
 }
 
 async function logout(req, res) {
   await User.findByIdAndUpdate(req.user.id, { refreshToken: null, refreshTokenId: null });
+  res.clearCookie('refreshToken', { httpOnly: true, secure: true, sameSite: 'strict' });
   logger.info({ userId: req.user.id }, 'User logged out');
   res.status(200).json({ success: true, data: null, message: 'Logged out successfully' });
 }
