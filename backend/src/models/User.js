@@ -6,8 +6,9 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     // storing as bcrypt hash
     password: { type: String, required: true },
-    // hashed refresh token... null when logged out
+    // hashed refresh token and its opaque identifier... both null when logged out
     refreshToken: { type: String, default: null },
+    refreshTokenId: { type: String, default: null },
   },
   { timestamps: true }
 );

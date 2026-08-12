@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -8,8 +9,10 @@ const SALT_ROUNDS = 10;
 
 function generateTokens(userId) {
   const accessToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '15m' });
-  const refreshToken = jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
-  return { accessToken, refreshToken };
+  // jti (JWT ID) is the opaque identifier stored on the user document for atomic rotation
+  const jti = crypto.randomUUID();
+  const refreshToken = jwt.sign({ id: userId, jti }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  return { accessToken, refreshToken, jti };
 }
 
 async function signup(req, res) {
@@ -22,8 +25,9 @@ async function signup(req, res) {
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await User.create({ name, email, password: hashedPassword });
 
-  const { accessToken, refreshToken } = generateTokens(user._id);
+  const { accessToken, refreshToken, jti } = generateTokens(user._id);
   user.refreshToken = await bcrypt.hash(refreshToken, SALT_ROUNDS);
+  user.refreshTokenId = jti;
   await user.save();
 
   logger.info({ userId: user._id }, 'User signed up');
@@ -52,8 +56,9 @@ async function login(req, res) {
     return res.status(401).json({ success: false, data: null, message: 'Invalid credentials' });
   }
 
-  const { accessToken, refreshToken } = generateTokens(user._id);
+  const { accessToken, refreshToken, jti } = generateTokens(user._id);
   user.refreshToken = await bcrypt.hash(refreshToken, SALT_ROUNDS);
+  user.refreshTokenId = jti;
   await user.save();
 
   logger.info({ userId: user._id }, 'User logged in');
@@ -79,8 +84,9 @@ async function refresh(req, res) {
     return res.status(401).json({ success: false, data: null, message: 'Invalid or expired refresh token' });
   }
 
+  // Fetch first so we can bcrypt.compare (the hash is needed before the atomic write)
   const user = await User.findById(payload.id);
-  if (!user || !user.refreshToken) {
+  if (!user || !user.refreshToken || user.refreshTokenId !== payload.jti) {
     return res.status(401).json({ success: false, data: null, message: 'Invalid refresh token' });
   }
 
@@ -89,9 +95,18 @@ async function refresh(req, res) {
     return res.status(401).json({ success: false, data: null, message: 'Invalid refresh token' });
   }
 
-  const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens(user._id);
-  user.refreshToken = await bcrypt.hash(newRefreshToken, SALT_ROUNDS);
-  await user.save();
+  const { accessToken: newAccessToken, refreshToken: newRefreshToken, jti: newJti } = generateTokens(user._id);
+  const newHash = await bcrypt.hash(newRefreshToken, SALT_ROUNDS);
+
+  // Conditional atomic update: only succeeds when the session we just validated is still current.
+  // A concurrent refresh or a post-logout replay will find no matching document and get a 401.
+  const updated = await User.findOneAndUpdate(
+    { _id: user._id, refreshTokenId: payload.jti },
+    { refreshToken: newHash, refreshTokenId: newJti },
+  );
+  if (!updated) {
+    return res.status(401).json({ success: false, data: null, message: 'Invalid refresh token' });
+  }
 
   logger.info({ userId: user._id }, 'Tokens refreshed');
 
@@ -103,7 +118,7 @@ async function refresh(req, res) {
 }
 
 async function logout(req, res) {
-  await User.findByIdAndUpdate(req.user.id, { refreshToken: null });
+  await User.findByIdAndUpdate(req.user.id, { refreshToken: null, refreshTokenId: null });
   logger.info({ userId: req.user.id }, 'User logged out');
   res.status(200).json({ success: true, data: null, message: 'Logged out successfully' });
 }
