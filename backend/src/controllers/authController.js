@@ -13,7 +13,8 @@ function generateTokens(userId) {
 }
 
 async function signup(req, res) {
-  const { name, email, password } = req.body;
+  const { name, password } = req.body;
+  const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
 
   if (!name || !email || !password) {
     return res.status(400).json({ success: false, data: null, message: 'name, email and password are required' });
