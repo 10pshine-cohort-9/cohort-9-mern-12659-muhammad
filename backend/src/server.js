@@ -19,7 +19,19 @@ app.use('/api/auth', authRoutes);
 
 app.use(errorHandler);
 
+const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
+
+function validateConfig() {
+  const missing = REQUIRED_ENV.filter((key) => !process.env[key]?.trim());
+  if (missing.length > 0) {
+    logger.error(`Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+}
+
 const PORT = process.env.PORT || 3000;
+
+validateConfig();
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -33,3 +45,5 @@ mongoose
     logger.error({ err }, 'MongoDB connection failed');
     process.exit(1);
   });
+
+module.exports = { validateConfig };
