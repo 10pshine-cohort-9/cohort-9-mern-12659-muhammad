@@ -18,10 +18,6 @@ function errorHandler(err, req, res, next) {
     message = `Invalid value for field: ${err.path}`;
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    message = statusCode === 500 ? 'Internal Server Error' : message;
-  }
-
   res.status(statusCode).json({ success: false, data: null, message });
 };
 
