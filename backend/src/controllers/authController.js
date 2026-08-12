@@ -29,19 +29,22 @@ function setRefreshCookie(res, token) {
 }
 
 async function signup(req, res) {
-  const { name, password } = req.body;
-  const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const body = req.body ?? {};
+  const { name, password } = body;
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
 
   if (!name || !email || !password) {
     return res.status(400).json({ success: false, data: null, message: 'name, email and password are required' });
   }
 
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-  const user = await User.create({ name, email, password: hashedPassword });
+  const user = new User({ name, email, password: hashedPassword });
 
   const { accessToken, refreshToken, jti } = generateTokens(user._id);
   user.refreshToken = await bcrypt.hash(refreshToken, SALT_ROUNDS);
   user.refreshTokenId = jti;
+  
+  // Save everything in one DB operation to prevent partial persistence
   await user.save();
 
   logger.info({ userId: user._id }, 'User signed up');
@@ -55,7 +58,8 @@ async function signup(req, res) {
 }
 
 async function login(req, res) {
-  const { email, password } = req.body;
+  const body = req.body ?? {};
+  const { email, password } = body;
 
   if (!email || !password) {
     return res.status(400).json({ success: false, data: null, message: 'email and password are required' });
