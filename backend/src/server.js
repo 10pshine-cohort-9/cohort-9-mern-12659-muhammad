@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const pinoHttp = require('pino-http');
 
@@ -11,8 +12,9 @@ const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5000', credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(pinoHttp({ logger }));
 
 app.use('/api/auth', authRoutes);
