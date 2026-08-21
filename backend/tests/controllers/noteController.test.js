@@ -72,6 +72,17 @@ describe('noteController', () => {
     expect(res.statusCode).to.equal(200);
   });
 
+  it('ignores non-string or empty category query parameter', async () => {
+    req.query = { isTrash: 'false', category: { $ne: null } };
+    const mockNotes = [{ _id: 'n1', title: 'Note 1' }];
+    const findStub = sinon.stub(Note, 'find').returns({ sort: sinon.stub().resolves(mockNotes) });
+
+    await noteController.getNotes(req, res);
+
+    expect(findStub.calledWith({ userId: 'user123', isTrash: false })).to.be.true;
+    expect(res.statusCode).to.equal(200);
+  });
+
   it('returns 404 if note not found by id', async () => {
     req.params.id = 'missing';
     sinon.stub(Note, 'findOne').resolves(null);
