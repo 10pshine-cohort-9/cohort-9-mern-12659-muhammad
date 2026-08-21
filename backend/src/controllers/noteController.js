@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 async function createNote(req, res) {
   const { title, content, category } = req.body ?? {};
 
-  if (!content) {
+if (typeof content !== 'string' || content.trim() === '') {
     return res.status(400).json({ success: false, data: null, message: 'content is required' });
   }
 
