@@ -32,8 +32,8 @@ async function getNotes(req, res) {
     isTrash,
   };
 
-  if (req.query.category) {
-    filter.category = req.query.category;
+  if (typeof req.query.category === 'string' && req.query.category.trim() !== '') {
+    filter.category = req.query.category.trim();
   }
 
   const notes = await Note.find(filter).sort({ updatedAt: -1 });
