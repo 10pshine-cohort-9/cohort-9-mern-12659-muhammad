@@ -33,8 +33,12 @@ function createMockRes() {
 describe('authController', () => {
   let req;
   let res;
+  let originalJwtSecret;
+  let originalJwtRefreshSecret;
 
   beforeEach(() => {
+    originalJwtSecret = process.env.JWT_SECRET;
+    originalJwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
     req = { body: {}, cookies: {} };
     res = createMockRes();
     process.env.JWT_SECRET = 'testsecret';
@@ -43,6 +47,16 @@ describe('authController', () => {
 
   afterEach(() => {
     sinon.restore();
+    if (originalJwtSecret !== undefined) {
+      process.env.JWT_SECRET = originalJwtSecret;
+    } else {
+      delete process.env.JWT_SECRET;
+    }
+    if (originalJwtRefreshSecret !== undefined) {
+      process.env.JWT_REFRESH_SECRET = originalJwtRefreshSecret;
+    } else {
+      delete process.env.JWT_REFRESH_SECRET;
+    }
   });
 
   it('rejects signup with missing fields', async () => {
