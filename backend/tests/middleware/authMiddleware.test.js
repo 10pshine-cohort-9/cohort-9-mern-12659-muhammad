@@ -22,8 +22,10 @@ describe('authMiddleware', () => {
   let req;
   let res;
   let next;
+  let originalJwtSecret;
 
   beforeEach(() => {
+    originalJwtSecret = process.env.JWT_SECRET;
     req = { headers: {} };
     res = createMockRes();
     next = sinon.spy();
@@ -32,6 +34,11 @@ describe('authMiddleware', () => {
 
   afterEach(() => {
     sinon.restore();
+    if (originalJwtSecret !== undefined) {
+      process.env.JWT_SECRET = originalJwtSecret;
+    } else {
+      delete process.env.JWT_SECRET;
+    }
   });
 
   it('returns 401 when Authorization header is missing', () => {
