@@ -69,7 +69,12 @@ async function updateNote(req, res) {
   }
 
   if (title !== undefined) note.title = title;
-  if (content !== undefined) note.content = content;
+  if (content !== undefined) {
+    if (typeof content !== 'string' || content.trim() === '') {
+      return res.status(400).json({ success: false, data: null, message: 'content is required' });
+    }
+    note.content = content.trim();
+  }
   if (category !== undefined) note.category = category;
 
   await note.save();
