@@ -103,9 +103,9 @@ describe('noteController', () => {
     expect(res.body.data).to.deep.equal(mockNote);
   });
 
-  it('updates note fields', async () => {
+  it('updates note fields and trims content', async () => {
     req.params.id = 'note123';
-    req.body = { title: 'Updated', content: '<p>Updated</p>', category: 'Personal' };
+    req.body = { title: 'Updated', content: '  <p>Updated</p>  ', category: 'Personal' };
     const mockNote = { title: 'Old', content: 'Old', category: 'Work', save: sinon.stub().resolves() };
     sinon.stub(Note, 'findOne').resolves(mockNote);
 
@@ -115,6 +115,19 @@ describe('noteController', () => {
     expect(mockNote.title).to.equal('Updated');
     expect(mockNote.content).to.equal('<p>Updated</p>');
     expect(mockNote.category).to.equal('Personal');
+  });
+
+  it('rejects note update with empty or whitespace-only content', async () => {
+    req.params.id = 'note123';
+    req.body = { content: '   ' };
+    const mockNote = { title: 'Old', content: 'Old', category: 'Work', save: sinon.stub().resolves() };
+    sinon.stub(Note, 'findOne').resolves(mockNote);
+
+    await noteController.updateNote(req, res);
+
+    expect(res.statusCode).to.equal(400);
+    expect(res.body.success).to.be.false;
+    expect(res.body.message).to.equal('content is required');
   });
 
   it('moves note to trash', async () => {
