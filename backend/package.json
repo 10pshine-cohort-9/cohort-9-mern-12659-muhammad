@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "mocha 'tests/**/*.test.js' --exit"
+    "test": "mocha tests/**/*.test.js --exit"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +23,7 @@
     "pino-http": "^11.0.0"
   },
   "devDependencies": {
-    "chai": "^6.2.2",
+    "chai": "^4.5.0",
     "mocha": "^11.8.0",
     "nodemon": "^3.1.14",
     "pino-pretty": "^13.1.3",
