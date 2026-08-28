@@ -1,12 +1,15 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './routes/ProtectedRoute';
+import Navbar from './components/Navbar';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import DashboardPage from './pages/DashboardPage';
+import NoteEditorPage from './pages/NoteEditorPage';
+import TrashPage from './pages/TrashPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
       <section id="center">
@@ -119,4 +122,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

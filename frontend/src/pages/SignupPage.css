@@ -1,0 +1,8 @@
+/* Signup page shares layout styles with auth-page */
+.signup-page {
+  min-height: calc(100vh - 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-6) var(--spacing-4);
+}
