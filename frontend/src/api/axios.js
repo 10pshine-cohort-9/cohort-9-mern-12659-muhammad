@@ -38,8 +38,8 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
      if (!originalRequest) return Promise.reject(error);
 
-    // Avoid infinite loop if refresh or auth endpoints return 401
-    const isAuthEndpoint = originalRequest.url?.includes('/api/auth/');
+    // Avoid infinite loop if refresh endpoint returns 401
+    const isAuthEndpoint = originalRequest.url?.includes('/api/auth/refresh');
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
