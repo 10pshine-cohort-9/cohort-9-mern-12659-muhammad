@@ -1,0 +1,35 @@
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 12px;
+  background-color: var(--color-bg);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.category-badge--clickable {
+  cursor: pointer;
+  background-color: var(--color-surface);
+  transition: all 0.15s ease;
+}
+
+.category-badge--clickable:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.category-badge--active {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  border-color: var(--color-accent);
+}
+
+.category-badge--active:hover {
+  background-color: var(--color-accent-hover);
+  color: #FFFFFF;
+}
