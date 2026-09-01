@@ -8,7 +8,7 @@
   --color-accent-hover: #A6501F;
   --color-danger: #B3261E;
   --radius: 6px;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+  --font-sans: system-ui, -apple-system, "Segoe UI", roboto, helvetica, arial, sans-serif;
   
   --spacing-1: 4px;
   --spacing-2: 8px;
