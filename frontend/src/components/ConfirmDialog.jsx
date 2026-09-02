@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useId } from 'react';
 import Button from './Button';
 import './ConfirmDialog.css';
 
@@ -14,6 +14,8 @@ export default function ConfirmDialog({
 }) {
   const dialogRef = useRef(null);
   const onCancelRef = useRef(onCancel);
+  const titleId = useId();
+  const messageId = useId();
 
   useEffect(() => {
     onCancelRef.current = onCancel;
@@ -88,10 +90,12 @@ export default function ConfirmDialog({
         className="confirm-dialog"
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="confirm-dialog__title">{title}</h3>
-        <p className="confirm-dialog__message">{message}</p>
+        <h3 id={titleId} className="confirm-dialog__title">{title}</h3>
+        <p id={messageId} className="confirm-dialog__message">{message}</p>
         <div className="confirm-dialog__actions">
           <Button variant="secondary" onClick={onCancel}>
             {cancelLabel}
