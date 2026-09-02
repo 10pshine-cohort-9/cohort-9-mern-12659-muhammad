@@ -8,8 +8,13 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      await logout();
+    } catch {
+      // Ignore errors on logout
+    } finally {
+      navigate('/login');
+    }
   };
 
   return (
