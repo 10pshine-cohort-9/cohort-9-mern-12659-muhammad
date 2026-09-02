@@ -20,16 +20,37 @@ function formatDate(dateString) {
   });
 }
 
-export default function NoteCard({ note, onClick, actions, className = '' }) {
-  const { title, content, category, updatedAt, createdAt } = note || {};
+export default function NoteCard({
+  note,
+  onClick,
+  actions = null,
+  className = '',
+}) {
+  if (!note || typeof note !== 'object') return null;
+
+  const { title, content, category, updatedAt, createdAt } = note;
   const displayTitle = title?.trim() || 'Untitled Note';
   const snippet = getSnippet(content);
   const displayDate = formatDate(updatedAt || createdAt);
+
+  const handleKeyDown = (e) => {
+    if (!onClick) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (e.target !== e.currentTarget && e.target.closest('.note-card__actions')) {
+        return;
+      }
+      e.preventDefault();
+      onClick(e);
+    }
+  };
 
   return (
     <article
       className={`note-card ${onClick ? 'note-card--clickable' : ''} ${className}`.trim()}
       onClick={onClick}
+      onKeyDown={onClick ? handleKeyDown : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      role={onClick ? 'button' : undefined}
     >
       <div className="note-card__header">
         <h3 className="note-card__title">{displayTitle}</h3>
@@ -44,6 +65,7 @@ export default function NoteCard({ note, onClick, actions, className = '' }) {
           <div
             className="note-card__actions"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             {actions}
           </div>
