@@ -16,8 +16,13 @@ export default function ProfilePage() {
   }, [fetchNotes]);
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      await logout();
+    } catch {
+      // Ignore errors on logout
+    } finally {
+      navigate('/login');
+    }
   };
 
   const formattedJoinDate = user?.createdAt
