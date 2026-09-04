@@ -119,7 +119,9 @@ export default function DashboardPage() {
               accept=".json,.html,.txt"
               onChange={handleImportFile}
               style={{ display: 'none' }}
+              className="visually-hidden"
               disabled={isImporting}
+              aria-label="Import notes"
             />
           </label>
           <Button variant="primary" onClick={() => navigate('/notes/new')}>
