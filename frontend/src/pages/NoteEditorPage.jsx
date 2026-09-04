@@ -75,7 +75,11 @@ export default function NoteEditorPage() {
   const handleSave = async () => {
     // Backend requires content to be non-empty string
     const trimmedContent = content.trim();
-    if (!trimmedContent || trimmedContent === '<p></p>') {
+    if (
+      !trimmedContent ||
+      trimmedContent === '<p></p>' ||
+      trimmedContent === '<p><br></p>'
+    ) {
       setErrorMessage('Note content cannot be empty');
       return;
     }
