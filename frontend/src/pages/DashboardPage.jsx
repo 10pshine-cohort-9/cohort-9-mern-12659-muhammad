@@ -118,7 +118,6 @@ export default function DashboardPage() {
               type="file"
               accept=".json,.html,.txt"
               onChange={handleImportFile}
-              style={{ display: 'none' }}
               className="visually-hidden"
               disabled={isImporting}
               aria-label="Import notes"
