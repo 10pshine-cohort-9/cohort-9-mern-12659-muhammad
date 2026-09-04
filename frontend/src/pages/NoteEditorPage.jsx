@@ -119,11 +119,22 @@ export default function NoteEditorPage() {
 
   const handleExport = () => {
     const filename = `${title.trim() || 'untitled-note'}.html`;
+    const escapeHtml = (str) =>
+      str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const escapedTitle = escapeHtml(title || 'Untitled Note');
+    const escapedCategory = category ? escapeHtml(category) : '';
+
     const fullHtml = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${title || 'Untitled Note'}</title>
+  <title>${escapedTitle}</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; color: #1F2421; line-height: 1.6; }
     h1 { color: #C1622D; }
@@ -131,8 +142,8 @@ export default function NoteEditorPage() {
   </style>
 </head>
 <body>
-  <h1>${title || 'Untitled Note'}</h1>
-  ${category ? `<p><span class="category">${category}</span></p>` : ''}
+  <h1>${escapedTitle}</h1>
+  ${escapedCategory ? `<p><span class="category">${escapedCategory}</span></p>` : ''}
   <hr style="border: none; border-top: 1px solid #E5E2DA; margin: 20px 0;" />
   ${content}
 </body>
