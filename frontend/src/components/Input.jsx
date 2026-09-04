@@ -21,6 +21,7 @@ export default function Input({
       placeholder={placeholder}
       disabled={disabled}
       required={required}
+      aria-invalid={hasError ? true : undefined}
       className={`input ${hasError ? 'input--error' : ''} ${className}`.trim()}
       {...rest}
     />
