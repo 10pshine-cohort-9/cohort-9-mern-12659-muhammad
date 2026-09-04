@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const filteredNotes = useMemo(() => {
     return notes.filter((note) => {
       const matchesCategory =
-        selectedCategory === 'ALL' || note.category === selectedCategory;
+        selectedCategory === 'ALL' || note.category?.trim() === selectedCategory;
 
       const titleMatch = (note.title || '')
         .toLowerCase()
