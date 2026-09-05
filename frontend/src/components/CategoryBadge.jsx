@@ -12,6 +12,7 @@ export default function CategoryBadge({
     return (
       <button
         type="button"
+        aria-pressed={isActive}
         className={`category-badge category-badge--clickable ${isActive ? 'category-badge--active' : ''} ${className}`.trim()}
         onClick={onClick}
       >

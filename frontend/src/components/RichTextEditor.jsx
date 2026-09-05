@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -228,11 +228,52 @@ function ToolbarPlugin() {
   );
 }
 
-function InitialContentPlugin({ initialContent }) {
+function InitialContentPlugin({ initialContent, noteId }) {
   const [editor] = useLexicalComposerContext();
+  const draftsRef = useRef(new Set());
+  const lastLoadedContentRef = useRef(null);
+  const prevNoteIdRef = useRef(noteId);
 
   useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const html = $generateHtmlFromNodes(editor, null);
+        draftsRef.current.add(html);
+        if (draftsRef.current.size > 50) {
+          const firstItem = draftsRef.current.values().next().value;
+          draftsRef.current.delete(firstItem);
+        }
+      });
+    });
+  }, [editor]);
+
+  useEffect(() => {
+    const isNoteIdentityChanged = prevNoteIdRef.current !== noteId;
+    prevNoteIdRef.current = noteId;
+
+    if (isNoteIdentityChanged) {
+      lastLoadedContentRef.current = null;
+      draftsRef.current.clear();
+      if (!initialContent) {
+        editor.update(() => {
+          $getRoot().clear();
+        });
+        return;
+      }
+    }
+
     if (!initialContent) return;
+
+    if (draftsRef.current.has(initialContent)) {
+      return;
+    }
+
+    if (lastLoadedContentRef.current === initialContent) {
+      return;
+    }
+
+    lastLoadedContentRef.current = initialContent;
+    draftsRef.current.clear();
 
     editor.update(() => {
       const root = $getRoot();
@@ -250,7 +291,7 @@ function InitialContentPlugin({ initialContent }) {
         root.append(paragraph);
       }
     });
-  }, [editor, initialContent]);
+  }, [editor, initialContent, noteId]);
 
   return null;
 }
@@ -260,6 +301,8 @@ export default function RichTextEditor({
   onChange,
   placeholder = 'Write your note here...',
   className = '',
+  noteId,
+  noteIdentity,
 }) {
   const initialConfig = {
     namespace: 'InkwellEditor',
@@ -297,7 +340,10 @@ export default function RichTextEditor({
           <HistoryPlugin />
           <ListPlugin />
           <OnChangePlugin onChange={handleEditorChange} />
-          <InitialContentPlugin initialContent={initialContent} />
+          <InitialContentPlugin
+            initialContent={initialContent}
+            noteId={noteId ?? noteIdentity}
+          />
         </div>
       </LexicalComposer>
     </div>

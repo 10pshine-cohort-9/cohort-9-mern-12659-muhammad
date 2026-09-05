@@ -5,16 +5,11 @@ import FormField from '../components/FormField';
 import Button from '../components/Button';
 import './auth.css';
 
-export default function SignupPage() {
-  const { signup, isAuthenticated } = useAuth();
+export default function LoginPage() {
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,20 +27,8 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { name, email, password, confirmPassword } = formData;
-
-    if (!name.trim() || !email.trim() || !password) {
-      setErrorMessage('All fields are required');
-      return;
-    }
-
-    if (name.trim().length < 3 || name.trim().length > 30) {
-      setErrorMessage('Name must be between 3 and 30 characters');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorMessage('Passwords do not match');
+    if (!formData.email || !formData.password) {
+      setErrorMessage('Email and password are required');
       return;
     }
 
@@ -53,11 +36,11 @@ export default function SignupPage() {
     setErrorMessage('');
 
     try {
-      await signup({ name: name.trim(), email: email.trim(), password });
+      await login(formData);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       const message =
-        err.response?.data?.message || 'Failed to create account. Please try again.';
+        err.response?.data?.message || 'Invalid email or password. Please try again.';
       setErrorMessage(message);
     } finally {
       setIsSubmitting(false);
@@ -68,25 +51,13 @@ export default function SignupPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-header">
-          <h1 className="auth-title">Create an account</h1>
-          <p className="auth-subtitle">Start organizing your personal notes</p>
+          <h1 className="auth-title">Welcome back</h1>
+          <p className="auth-subtitle">Sign in to your Inkwell account</p>
         </div>
 
         {errorMessage && <div className="auth-error-banner">{errorMessage}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
-          <FormField
-            label="Full name"
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Jane Doe"
-            required
-            autoComplete="name"
-          />
-
           <FormField
             label="Email address"
             id="email"
@@ -108,19 +79,7 @@ export default function SignupPage() {
             onChange={handleChange}
             placeholder="••••••••"
             required
-            autoComplete="new-password"
-          />
-
-          <FormField
-            label="Confirm password"
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="••••••••"
-            required
-            autoComplete="new-password"
+            autoComplete="current-password"
           />
 
           <Button
@@ -129,13 +88,13 @@ export default function SignupPage() {
             disabled={isSubmitting}
             className="auth-submit-btn"
           >
-            {isSubmitting ? 'Creating account...' : 'Create Account'}
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Already have an account? <Link to="/login">Sign in</Link>
+            Don't have an account? <Link to="/signup">Create one</Link>
           </p>
         </div>
       </div>
